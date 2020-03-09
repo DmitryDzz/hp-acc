@@ -21,7 +21,7 @@ def print_header(file):
 
 
 def print_values(file, start_time):
-    t = int(round(time.time() * 1000.)) - start_time
+    t = time.time() - start_time
     values = get_values()
     x = values[0]
     y = values[1]
@@ -36,7 +36,7 @@ def main():
     print()
     print("Device name: " + get_accelerometer_name())
     print()
-    start_time = int(round(time.time() * 1000))
+    start_time = time.time()
     with open("./hp-acc.csv", "w") as file:
         print_header(file)
         try:
