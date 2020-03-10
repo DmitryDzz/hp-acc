@@ -1,3 +1,4 @@
+import threading
 import time
 from math import sqrt
 import matplotlib.pyplot as plt
@@ -26,22 +27,34 @@ y_values = []
 z_values = []
 m_values = []
 
-start_t = 0
+start_t = None
+
+
+def thread_function(name):
+    while True:
+        t, x, y, z, m = get_values()
+
+        global start_t
+        if start_t is None:
+            start_t = t
+        t = t - start_t
+
+        t_values.append(t)
+        x_values.append(x)
+        y_values.append(y)
+        z_values.append(z)
+        m_values.append(m)
+
+        # print(len(t_values))
+        time.sleep(0.02)
 
 
 def animate(i):
-    t, x, y, z, m = get_values()
+    last_index = len(t_values) - 1
+    if last_index < 0:
+        return
+    t = t_values[len(t_values) - 1]
 
-    global start_t
-    if i == 0:
-        start_t = t
-    t = t - start_t
-
-    t_values.append(t)
-    x_values.append(x)
-    y_values.append(y)
-    z_values.append(z)
-    m_values.append(m)
     plt.cla()
     plt.plot(t_values, x_values, label="x axis", color="g")
     plt.plot(t_values, y_values, label="y axis", color="y")
@@ -53,7 +66,7 @@ def animate(i):
     y_bottom, y_top = plt.ylim()
     plt.ylim(bottom=min(-1.0, y_bottom), top=max(1.0, y_top))
 
-    # plt.legend(loc="upper left")
+    plt.legend(loc="upper left")
     # plt.tight_layout()
 
 
@@ -63,6 +76,10 @@ def main():
     print()
     print("Device name: " + get_accelerometer_name())
     print()
+
+    thread = threading.Thread(target=thread_function, args=(1,), daemon=True)
+    thread.start()
+
     # plt.style.use("fivethirtyeight")
     animation = FuncAnimation(plt.gcf(), animate, interval=100)
     plt.show()
