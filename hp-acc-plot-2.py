@@ -1,29 +1,14 @@
 import threading
-import time
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+from acchardware import AccHardware
 from accfigure import AccFigure
-
-
-def get_accelerometer_name():
-    with open("/sys/devices/platform/lis3lv02d/input/input14/name", "r") as name:
-        return name.readline().strip()
-
-
-def get_values():
-    with open("/sys/devices/platform/lis3lv02d/position", "r") as position:
-        s = position.readline().strip().strip("()").split(",")
-        t = time.time()
-        x = float(s[0]) / 1000.
-        y = float(s[1]) / 1000.
-        z = float(s[2]) / 1000.
-        return t, x, y, z
 
 
 def thread_function(_name, acc_figure_1, acc_figure_2):
     while True:
-        t, x, y, z = get_values()
+        t, x, y, z = AccHardware.get_values()
         acc_figure_1.feed_acc(t, x, y, z)
         acc_figure_2.feed_acc(t, x, y, z)
 
@@ -59,7 +44,7 @@ def main():
     print()
     print("Press Ctrl+C to exit")
     print()
-    print("Device name: " + get_accelerometer_name())
+    print("Device name: " + AccHardware.get_accelerometer_name())
     print()
 
     thread = threading.Thread(target=thread_function, args=(1, acc_figure_1, acc_figure_2), daemon=True)
