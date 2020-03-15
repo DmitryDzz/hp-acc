@@ -3,7 +3,7 @@ from math import sqrt
 
 class AccFigure:
     def __init__(self, alpha):
-        self.alpha = alpha
+        self.alpha = max(min(alpha, 1.0), 0.0)  # clamp(alpha)
         self.rate = 0.0
 
         self.t_values = []

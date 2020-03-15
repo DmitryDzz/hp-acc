@@ -1,3 +1,7 @@
+###########################
+# pip3 install matplotlib
+###########################
+
 import threading
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -35,7 +39,7 @@ def animate(_i, acc_figure):
     # plt.tight_layout()
 
 
-def main():
+def main(lerp_coef):
     print()
     if not AccHardware.acc_exists():
         print("Accelerometer not found")
@@ -45,7 +49,7 @@ def main():
     print("Press Ctrl+C to exit")
     print()
 
-    acc_figure = AccFigure(1.0)
+    acc_figure = AccFigure(lerp_coef)
     thread = threading.Thread(target=thread_function, args=(1, acc_figure), daemon=True)
     thread.start()
 
@@ -59,4 +63,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(1.0)
