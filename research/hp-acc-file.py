@@ -37,7 +37,7 @@ def main():
     print("Device name: " + get_accelerometer_name())
     print()
     start_time = time.time()
-    with open("./hp-acc.csv", "w") as file:
+    with open("hp-acc.csv", "w") as file:
         print_header(file)
         try:
             while True:

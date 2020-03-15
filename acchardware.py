@@ -1,15 +1,17 @@
+import os
 import time
 
 
 class AccHardware:
+    _pos = "/sys/devices/platform/lis3lv02d/position"
+
     @staticmethod
-    def get_accelerometer_name():
-        with open("/sys/devices/platform/lis3lv02d/input/input14/name", "r") as name:
-            return name.readline().strip()
+    def acc_exists():
+        return os.path.exists(AccHardware._pos) and os.path.isfile(AccHardware._pos)
 
     @staticmethod
     def get_values():
-        with open("/sys/devices/platform/lis3lv02d/position", "r") as position:
+        with open(AccHardware._pos, "r") as position:
             s = position.readline().strip().strip("()").split(",")
             t = time.time()
             x = float(s[0]) / 1000.

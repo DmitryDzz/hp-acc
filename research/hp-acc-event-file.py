@@ -55,7 +55,7 @@ def main():
     print()
     print("Device name: " + get_accelerometer_name())
     print()
-    with open("./hp-acc-event.csv", "w") as file:
+    with open("hp-acc-event.csv", "w") as file:
         print_header(file)
         print_data(file)
 

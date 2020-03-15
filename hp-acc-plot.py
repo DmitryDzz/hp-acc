@@ -1,71 +1,61 @@
-import time
-from math import sqrt
+import threading
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-
-def get_accelerometer_name():
-    with open("/sys/devices/platform/lis3lv02d/input/input14/name", "r") as name:
-        return name.readline().strip()
+from acchardware import AccHardware
+from accfigure import AccFigure
 
 
-def get_values():
-    with open("/sys/devices/platform/lis3lv02d/position", "r") as position:
-        s = position.readline().strip().strip("()").split(",")
-        t = time.time()
-        x = float(s[0]) / 1000.
-        y = float(s[1]) / 1000.
-        z = float(s[2]) / 1000.
-        m = sqrt(x * x + y * y + z * z)
-        return t, x, y, z, m
+def thread_function(_name, acc_figure):
+    while True:
+        t, x, y, z = AccHardware.get_values()
+        acc_figure.feed_acc(t, x, y, z)
 
 
-t_values = []
-x_values = []
-y_values = []
-z_values = []
-m_values = []
+def animate(_i, acc_figure):
+    last_index = len(acc_figure.t_values) - 1
+    if last_index < 0:
+        return
+    t = acc_figure.t_values[len(acc_figure.t_values) - 1]
 
-start_t = 0
-
-
-def animate(i):
-    t, x, y, z, m = get_values()
-
-    global start_t
-    if i == 0:
-        start_t = t
-    t = t - start_t
-
-    t_values.append(t)
-    x_values.append(x)
-    y_values.append(y)
-    z_values.append(z)
-    m_values.append(m)
     plt.cla()
-    plt.plot(t_values, x_values, label="x axis", color="g")
-    plt.plot(t_values, y_values, label="y axis", color="y")
-    plt.plot(t_values, z_values, label="z axis", color="r")
-    plt.plot(t_values, m_values, label="magnitude", color="k")
+    plt.plot(acc_figure.t_values, acc_figure.x_values, label="x axis", color="g")
+    plt.plot(acc_figure.t_values, acc_figure.y_values, label="y axis", color="y")
+    plt.plot(acc_figure.t_values, acc_figure.z_values, label="z axis", color="r")
+    plt.plot(acc_figure.t_values, acc_figure.m_values, label="magnitude", color="k")
 
     plt.xlim(left=max(0., t-10), right=max(t, 10))
 
     y_bottom, y_top = plt.ylim()
     plt.ylim(bottom=min(-1.0, y_bottom), top=max(1.0, y_top))
 
-    # plt.legend(loc="upper left")
+    plt.title("Accelerometer data (rate={:.1f})".format(acc_figure.rate), loc="left")
+    plt.legend(loc="lower left")
+    plt.grid(True)
     # plt.tight_layout()
 
 
 def main():
     print()
+    if not AccHardware.acc_exists():
+        print("Accelerometer not found")
+        print()
+        return -1
+
     print("Press Ctrl+C to exit")
     print()
-    print("Device name: " + get_accelerometer_name())
-    print()
+
+    acc_figure = AccFigure(1.0)
+    thread = threading.Thread(target=thread_function, args=(1, acc_figure), daemon=True)
+    thread.start()
+
     # plt.style.use("fivethirtyeight")
-    animation = FuncAnimation(plt.gcf(), animate, interval=100)
+    figure = plt.figure(num="Accelerometer data")
+    figure.add_subplot(1, 1, 1)
+    _animation = FuncAnimation(figure, animate, fargs=(acc_figure,), interval=100)
     plt.show()
+
+    return 0
 
 
 if __name__ == '__main__':
